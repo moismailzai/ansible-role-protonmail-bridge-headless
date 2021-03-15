@@ -4,9 +4,27 @@
       name: "{{ deps }}"
       state: "present"
 
+- name: "Get the username associated with ID 1000"
+  set_fact:
+      username_for_id_1000: "{{ lookup('pipe', 'getent passwd 1000|cut -d: -f1' ) }}"
+
+- name: "Give temporary ownership of {{ protonmail_lib_dir }} to {{ username_for_id_1000 }} (must run makepkg as non-privileged user)"
+  file:
+      path: "{{ protonmail_lib_dir }}"
+      owner: "{{ username_for_id_1000 }}"
+      group: "{{ username_for_id_1000 }}"
+  when: "not which_protonmail_bridge"
+
 - name: "Download, verify, and install the protonmail-bridge package"
   become: "yes"
-  shell: "cd {{ protonmail_lib_dir }} && makepkg -s --install"
+  become_user: "{{ username_for_id_1000 }}"
+  shell: "cd {{ protonmail_lib_dir }} && makepkg -s --install --noconfirm"
   args:
-      executable: "/bin/sh"
+      executable: "/bin/bash"
   when: "not which_protonmail_bridge"
+
+- name: "Give ownership of {{ protonmail_lib_dir }} back to root"
+  ansible.builtin.file:
+      path: "{{ protonmail_lib_dir }}"
+      owner: "root"
+      group: "root"

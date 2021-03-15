@@ -6,7 +6,7 @@
   become_method: "su"
   become_user: "{{ protonmail_user }}"
   shell: >
-    echo {{ '-e' if ansible_os_family == 'RedHat' else '' }} {{ lookup('template', 'templates/protonmail-bridge.gpg.j2') }}
+    echo {{ '-e' if ansible_os_family != 'Debian' else '' }} {{ lookup('template', 'templates/protonmail-bridge.gpg.j2') }}
     | gpg --batch --generate-key
     && gpg-connect-agent reloadagent /bye
   when: "not gpg_key_id"

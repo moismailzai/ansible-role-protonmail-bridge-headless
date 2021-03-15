@@ -87,6 +87,10 @@ A paid ProtonMail account.
 ## Sample usage
 
 First, install a current version of [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-specific-operating-systems):  
+Archlinux:
+``` 
+sudo pacman -Syu ansible
+```
 RHEL:
 ```
 sudo dnf -y install epel-release

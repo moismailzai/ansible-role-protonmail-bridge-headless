@@ -59,7 +59,13 @@
       dest: "/etc/ssl/certs/protonmail-bridge.pem"
       state: "link"
   notify: "restart postfix"
+  register: "symlinked_cert_to_trust_store"
   when: "ansible_os_family != 'RedHat'"
+
+- name: "Explicitly trust the above cert on Archlinux"
+  command: "trust anchor /etc/ssl/certs/protonmail-bridge.pem"
+  notify: "restart postfix"
+  when: "ansible_os_family == 'Archlinux' and symlinked_cert_to_trust_store.changed"
 
 - name: "Add a symlink to the protonmail-bridge self-signed certificate on RHEL machines"
   file:

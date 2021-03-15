@@ -1,6 +1,7 @@
 ---
 # https://protonmail.com/support/knowledge-base/install-bridge-linux-pkgbuild-file/
 __deps:
+    - "base-devel"
     - "bridge-utils" # addresses keychain errors on some configurations
     - "expect" # used to configure bridge interactively
     - "gnupg"
