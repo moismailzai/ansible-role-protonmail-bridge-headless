@@ -1,0 +1,43 @@
+---
+
+# mandatory variables ##################################################################################################
+protonmail_username: ""
+protonmail_password: ""
+protonmail_custom_domain: ""
+########################################################################################################################
+
+command_gpg_list_secret_keys: "su - {{ protonmail_user }} -c 'gpg --list-secret-keys \"{{ gpg_key_settings.name }}\" | grep -oP \"^ * (.*)$\" | head -1'"
+command_pass_ls: "su - {{ protonmail_user }} -c 'pass ls || true'"
+command_protonmail_bridge_info: |
+    su - {{ protonmail_user }} -c 'echo "info \n exit" | protonmail-bridge --cli --no-window && killall protonmail-bridge || true'
+command_which_protonmail_bridge: "which protonmail-bridge 2>/dev/null || true"
+
+configure_gpg: true
+configure_pass: true
+configure_postfix: true
+configure_service: true
+# configure_selinux: false
+configure_user: true
+
+gpg_key_settings:
+    # see https://www.gnupg.org/documentation/manuals/gnupg/Unattended-GPG-key-generation.html
+    type: default
+    length: default
+    subkey_type: default
+    subkey_length: default
+    expire_date: 0
+    name: protonmail-bridge-headless service key
+    email: root@localhost
+
+postfix_hostname: "{{ protonmail_custom_domain }}"
+postfix_localhost_address: "127.0.0.1"
+
+protonmail_bridge_pkgbuild_file: "https://protonmail.com/download/bridge/PKGBUILD"
+protonmail_bridge_policy_file: "https://protonmail.com/download/bridge.pol"
+protonmail_bridge_pubkey_file: "https://protonmail.com/download/bridge_pubkey.gpg"
+protonmail_bridge_pubkey_id: "E2C75D68E6234B07"
+protonmail_lib_dir: "/var/lib/protonmail"
+protonmail_user: "protonmail"
+protonmail_user_flags: "-L"
+
+selinux_httpd_can_sendmail: true

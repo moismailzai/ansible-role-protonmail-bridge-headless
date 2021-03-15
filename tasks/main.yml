@@ -1,0 +1,47 @@
+---
+- name: "Include OS-specific variables"
+  include_vars: "{{ item }}"
+  with_fileglob:
+    - "{{ role_path }}/vars/{{ ansible_os_family }}.yml"
+
+- name: "Define variables"
+  set_fact: "{{ item.key }}={{ lookup('vars', item.value) }}"
+  when:
+    - vars[item.key] is undefined
+    - vars[item.value] is defined
+  with_dict:
+    configure: __configure_selinux
+    deps: __deps
+
+- name: "Define SELinux"
+  set_fact: "configure_selinux=true"
+  when:
+    - configure_selinux is undefined
+    - ansible_os_family == 'RedHat'
+
+- include_tasks: "configure.yml"
+
+- include_tasks: "setup-{{ ansible_os_family }}.yml"
+  vars:
+    protonmail_current_version: "{{ lookup('file', protonmail_lib_dir + '/PKGBUILD') | regex_search('(?ims).*pkgver=([^\\r\\n]+)', '\\1') | join('') }}"
+    protonmail_current_release: "{{ lookup('file', protonmail_lib_dir + '/PKGBUILD') | regex_search('(?ims).*pkgrel=([^\\r\\n]+)', '\\1') | join('') }}"
+
+- include_tasks: "configure-user.yml"
+  when: configure_user|bool
+
+- include_tasks: "configure-gpg.yml"
+  when: configure_gpg|bool
+
+- include_tasks: "configure-pass.yml"
+  when: configure_pass|bool
+
+- include_tasks: "configure-protonmail-bridge.yml"
+
+- include_tasks: "configure-postfix.yml"
+  when: configure_postfix|bool
+
+- include_tasks: "configure-service.yml"
+  when: configure_service|bool
+
+- debug:
+    msg: "Good to go! `netstat -tulnp | grep 1025` should show the bridge listening. Use https://www.checktls.com/TestSender to test your mail settings."

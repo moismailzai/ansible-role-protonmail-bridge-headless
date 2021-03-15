@@ -1,0 +1,16 @@
+---
+- name: "restart postfix"
+  service:
+      name: "postfix"
+      state: "restarted"
+
+- name: "restart protonmail-bridge-headless"
+  service:
+      name: "protonmail-bridge-headless"
+      state: "restarted"
+
+- name: "enable and restart saslauthd"
+  service:
+      enabled: "yes"
+      name: "saslauthd"
+      state: "restarted"

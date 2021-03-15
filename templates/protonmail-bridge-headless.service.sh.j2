@@ -1,0 +1,56 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# Forked from https://gist.github.com/ibaiul/60d603845df931483a05d96c5b433981
+
+start_protonmail_bridge()
+{
+    # creates the named screen "protonmail-bridge" and starts the protonmail-bridge process
+    screen -S protonmail-bridge -dm protonmail-bridge --cli --no-window --noninteractive
+    echo "Service started."
+}
+
+status_protonmail_bridge()
+{
+    # ignore this block unless you understand how screen works and that only lists the current user's screens
+    result=$(screen -list | grep protonmail-bridge)
+    if [ $? == 0 ]; then
+      PROTONMAIL_BRIDGE_ACTIVE_ON_1025=$(netstat -tulnp 2>/dev/null | grep 1025)
+      if [ -z "$PROTONMAIL_BRIDGE_ACTIVE_ON_1025" ]
+      then
+            echo "Protonmail bridge service is ON but not listening to port 1025."
+      else
+            echo "Protonmail bridge service is ON."
+      fi
+    else
+      echo "Protonmail bridge service is OFF."
+    fi
+}
+
+stop_protonmail_bridge()
+{
+    # exits the named screen "protonmail-bridge" and the protonmail-bridge process
+    screen -S protonmail-bridge -X quit
+    echo "Service stopped."
+}
+
+GPG_TTY=$(tty)
+
+case "$1" in
+  reload)
+    stop_protonmail_bridge
+    start_protonmail_bridge
+    ;;
+  start)
+    start_protonmail_bridge
+    ;;
+  status)
+    status_protonmail_bridge
+    ;;
+  stop)
+    stop_protonmail_bridge
+    ;;
+  *)
+    echo "Unknown command: $1"
+    exit 1
+  ;;
+esac

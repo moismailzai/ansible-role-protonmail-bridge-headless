@@ -1,0 +1,14 @@
+---
+- name: "Ensure configuration directory exists"
+  file:
+      path: "{{ protonmail_lib_dir }}"
+      state: "directory"
+
+- name: "Download the latest PKGBUILD to parse current metadata"
+  get_url:
+      url: "{{ protonmail_bridge_pkgbuild_file }}"
+      dest: "{{ protonmail_lib_dir }}/PKGBUILD"
+
+- name: "Check if protonmail-bridge is already installed"
+  set_fact:
+      which_protonmail_bridge: "{{ lookup('pipe', command_which_protonmail_bridge) }}"

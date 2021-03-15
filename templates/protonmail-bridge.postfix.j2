@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+inet_interfaces = loopback-only
+myhostname = {{ postfix_hostname }}
+relayhost = [{{ postfix_localhost_address }}]:1025
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+smtp_tls_CApath = /etc/ssl/certs
+smtp_tls_security_level = verify
+smtp_tls_session_cache_database = btree:/var/run/smtp_tls_session_cache
+smtp_use_tls = yes
+smtpd_sasl_auth_enable = yes

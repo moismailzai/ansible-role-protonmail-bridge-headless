@@ -1,0 +1,14 @@
+---
+# https://protonmail.com/support/knowledge-base/installing-bridge-linux-deb-file/
+__deps:
+  - "bridge-utils" # addresses keychain errors on some configurations
+  - "debian-keyring"
+  - "debsig-verify"
+  - "expect" # used to configure bridge interactively
+  - "gnupg"
+  - "libsecret-common"
+  - "net-tools" # used by systemtd service to ensure process is active on port 1025
+  - "mailutils"
+  - "pass"
+  - "postfix"
+  - "screen" # used to run bridge in background as there is currently no other way to do so

@@ -1,0 +1,42 @@
+---
+- name: "Add protonmail-bridge configuration to postfix"
+  blockinfile:
+      dest: "/etc/postfix/main.cf"
+      block: "{{ lookup('template', 'templates/protonmail-bridge.postfix.j2') }}"
+  notify: "restart postfix"
+
+- name: "Calculate sasl_passwd contents"
+  set_fact:
+      postfix_sasl_passwd: "[{{ postfix_localhost_address }}]:1025 {{ protonmail_email_local }}:{{ protonmail_password_local }}"
+
+- name: "Check to see if /etc/postfix/sasl_passwd contents require an update"
+  set_fact:
+      is_updated_sasl_passwd: "{{ lookup('pipe', 'cat /etc/postfix/sasl_passwd || true' ) != postfix_sasl_passwd }}"
+
+- name: "Update sasl_passwd file with calculated contents"
+  become: "yes"
+  copy:
+      content: "{{ postfix_sasl_passwd }}"
+      dest: "/etc/postfix/sasl_passwd"
+      mode: "0600"
+  when: "is_updated_sasl_passwd"
+  notify: "restart postfix"
+
+- name: "Update postfix lookup tables"
+  become: "yes"
+  command: "postmap /etc/postfix/sasl_passwd"
+  when: "is_updated_sasl_passwd"
+  notify: "restart postfix"
+
+- name: "Enable the postfix service"
+  service:
+      name: "postfix"
+      enabled: "yes"
+  notify: "restart postfix"
+
+- name: "enable SELinux httpd mail sending"
+  seboolean:
+      name: "httpd_can_sendmail"
+      persistent: "yes"
+      state: "yes"
+  when: "selinux_httpd_can_sendmail|bool and configure_selinux|default(false, true)"

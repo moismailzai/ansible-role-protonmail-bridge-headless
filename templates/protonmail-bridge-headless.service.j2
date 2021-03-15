@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+# Forked from https://gist.github.com/ibaiul/60d603845df931483a05d96c5b433981
+[Unit]
+Description=Service to run protonmail-bridge in headless mode (via screen)
+After=network.target
+
+[Service]
+Type=oneshot
+User={{ protonmail_user }}
+ExecStart={{ protonmail_lib_dir }}/protonmail-bridge-headless.service.sh start
+ExecStop={{ protonmail_lib_dir }}/protonmail-bridge-headless.service.sh stop
+ExecReload={{ protonmail_lib_dir }}/protonmail-bridge-headless.service.sh reload
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

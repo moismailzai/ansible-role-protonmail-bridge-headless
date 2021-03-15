@@ -1,0 +1,29 @@
+- name: "Add protonmail-bridge headless script"
+  become: "yes"
+  notify: "restart protonmail-bridge-headless"
+  register: "added_protonmail_headless_script"
+  template:
+      src: "templates/protonmail-bridge-headless.service.sh.j2"
+      dest: "{{ protonmail_lib_dir }}/protonmail-bridge-headless.service.sh"
+      mode: "+x"
+
+- name: "set SELinux types"
+  command: "semanage fcontext -a -t bin_t /var/lib/protonmail/protonmail-bridge-headless.service.sh"
+  when: "configure_selinux and added_protonmail_headless_script.changed"
+
+- name: "apply SELinux file contexts to filesystem"
+  command: "restorecon -irv /var/lib/protonmail/protonmail-bridge-headless.service.sh"
+  when: "configure_selinux and added_protonmail_headless_script.changed"
+
+- name: "Add protonmail-bridge headless service"
+  become: "yes"
+  template:
+      src: "templates/protonmail-bridge-headless.service.j2"
+      dest: "/etc/systemd/system/protonmail-bridge-headless.service"
+  notify: "restart protonmail-bridge-headless"
+
+- name: "Enable the protonmail-bridge headless service"
+  service:
+      name: "protonmail-bridge-headless.service"
+      enabled: "yes"
+  notify: "restart protonmail-bridge-headless"

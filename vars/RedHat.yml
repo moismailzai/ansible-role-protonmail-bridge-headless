@@ -1,0 +1,15 @@
+---
+# https://protonmail.com/support/knowledge-base/install-bridge-linux-rpm-file/
+__deps:
+    - "cyrus-sasl"
+    - "cyrus-sasl-devel"
+    - "cyrus-sasl-plain"
+    - "expect" # used to configure bridge interactively
+    - "gnupg"
+    - "libsecret"
+    - "net-tools" # used by systemtd service to ensure process is active on port 1025
+    - "mailx"
+    - "pass"
+    - "policycoreutils-python-utils"
+    - "postfix"
+    - "screen" # used to run bridge in background as there is currently no other way to do so

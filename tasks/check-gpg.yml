@@ -1,0 +1,3 @@
+- name: "Get {{ gpg_key_settings.name }} id"
+  set_fact:
+    gpg_key_id: "{{ lookup('pipe', command_gpg_list_secret_keys) }}"

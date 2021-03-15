@@ -1,0 +1,12 @@
+---
+- name: "Install dependencies"
+  pacman:
+      name: "{{ deps }}"
+      state: "present"
+
+- name: "Download, verify, and install the protonmail-bridge package"
+  become: "yes"
+  shell: "cd {{ protonmail_lib_dir }} && makepkg -s --install"
+  args:
+      executable: "/bin/sh"
+  when: "not which_protonmail_bridge"

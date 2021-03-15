@@ -1,0 +1,15 @@
+---
+- import_tasks: "check-gpg.yml"
+
+- name: "Add protonmail-bridge gpg key and reload gpg-connect-agent"
+  become: "yes"
+  become_method: "su"
+  become_user: "{{ protonmail_user }}"
+  shell: >
+    echo {{ '-e' if ansible_os_family == 'RedHat' }} {{ lookup('template', 'templates/protonmail-bridge.gpg.j2') }}
+    | gpg --batch --generate-key
+    && gpg-connect-agent reloadagent /bye
+  when: "not gpg_key_id"
+
+- import_tasks: "check-gpg.yml"
+  when: "not gpg_key_id"

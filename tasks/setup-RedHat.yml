@@ -1,0 +1,30 @@
+---
+- name: "Install dependencies"
+  dnf:
+    name: "{{ deps }}"
+    state: "present"
+  notify: "enable and restart saslauthd"
+
+- name: "Import the protonmail-bridge key"
+  rpm_key:
+    state: "present"
+    key: "{{ protonmail_bridge_pubkey_file }}"
+  when: "not which_protonmail_bridge"
+
+- name: "Set protonmail-bridge package name"
+  set_fact:
+    protonmail_bridge_package_name: "protonmail-bridge-{{ protonmail_current_version }}-{{ protonmail_current_release }}.x86_64.rpm"
+
+- name: "Download the protonmail-bridge package"
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ protonmail_lib_dir }}/{{ item.file }}"
+  with_items:
+    - url: "https://protonmail.com/download/bridge/{{ protonmail_bridge_package_name }}"
+      file: "{{ protonmail_bridge_package_name }}"
+
+- name: "Install protonmail-bridge package"
+  dnf:
+    name: "{{ protonmail_lib_dir }}/{{ protonmail_bridge_package_name }}"
+    state: "present"
+  when: "not which_protonmail_bridge"

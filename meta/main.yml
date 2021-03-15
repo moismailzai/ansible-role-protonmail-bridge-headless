@@ -1,0 +1,36 @@
+---
+dependencies: []
+
+galaxy_info:
+    role_name: "protonmail_bridge_headless"
+    author: "moismailzai"
+    description: "Installs the ProtonMail bridge, registers it as a headless service, and configures Postfix to use it."
+    license: "license (MIT)"
+    min_ansible_version: 2.8
+    issue_tracker_url: "https://github.com/moismailzai/ansible-role-protonmail-bridge-headless/issues"
+    platforms:
+        - name: "ArchLinux"
+          versions:
+              - "all"
+        - name: "Debian"
+          versions:
+              - "buster"
+              - "stretch"
+        - name: "EL"
+          versions:
+              - 8
+        - name: "Fedora"
+          versions:
+              - 30
+              - 31
+              - 32
+        - name: "Ubuntu"
+          versions:
+              - "bionic"
+              - "focal"
+
+    galaxy_tags:
+        - "protonmail"
+        - "protonmailbridge"
+        - "bridge"
+        - "postfix"

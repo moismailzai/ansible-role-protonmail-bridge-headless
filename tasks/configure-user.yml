@@ -1,0 +1,5 @@
+---
+- name: "Add protonmail user"
+  user:
+      name: "{{ protonmail_user }}"
+      password_lock: "yes"

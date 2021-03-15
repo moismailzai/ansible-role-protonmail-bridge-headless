@@ -1,0 +1,11 @@
+---
+- name: "Get {{ gpg_key_settings.name }} id"
+  set_fact:
+    pass_ls: "{{ lookup('pipe', command_pass_ls ) }}"
+
+- name: "Initialize pass"
+  become: "yes"
+  become_method: "su"
+  become_user: "{{ protonmail_user }}"
+  command: "pass init {{ gpg_key_id }}"
+  when: "not pass_ls"

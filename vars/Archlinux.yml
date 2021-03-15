@@ -1,0 +1,12 @@
+---
+# https://protonmail.com/support/knowledge-base/install-bridge-linux-pkgbuild-file/
+__deps:
+    - "bridge-utils" # addresses keychain errors on some configurations
+    - "expect" # used to configure bridge interactively
+    - "gnupg"
+    - "libsecret"
+    - "netstat-nat" # used by systemtd service to ensure process is active on port 1025
+    - "s-nail"
+    - "pass"
+    - "postfix"
+    - "screen" # used to run bridge in background as there is currently no other way to do so

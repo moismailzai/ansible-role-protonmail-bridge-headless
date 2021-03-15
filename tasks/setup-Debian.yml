@@ -1,0 +1,53 @@
+---
+- name: "Install dependencies"
+  apt:
+    pkg: "{{ deps }}"
+
+- name: "Set protonmail-bridge package name"
+  set_fact:
+    protonmail_bridge_package_name: "protonmail-bridge_{{ protonmail_current_version }}-{{ protonmail_current_release }}_amd64.deb"
+
+- name: "Download the protonmail-bridge, policy file, and public key"
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ protonmail_lib_dir }}/{{ item.file }}"
+  with_items:
+    - url: "https://protonmail.com/download/bridge/{{ protonmail_bridge_package_name }}"
+      file: "{{ protonmail_bridge_package_name }}"
+    - url: "{{ protonmail_bridge_policy_file }}"
+      file: "bridge.pol"
+    - url: "{{ protonmail_bridge_pubkey_file }}"
+      file: "bridge_pubkey.gpg"
+
+- name: "Unpack the public key"
+  become: "yes"
+  command: "gpg --dearmor --yes --output {{ protonmail_lib_dir }}/debsig.gpg {{ protonmail_lib_dir }}/bridge_pubkey.gpg"
+  when: "not which_protonmail_bridge"
+
+- name: "Create the keyring and policy folders"
+  file:
+    path: "{{ item }}"
+    state: "directory"
+  with_items:
+    - "/usr/share/debsig/keyrings/{{ protonmail_bridge_pubkey_id }}"
+    - "/etc/debsig/policies/{{ protonmail_bridge_pubkey_id }}"
+
+- name: "Copy the key to the keyring"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "{{ protonmail_lib_dir }}/debsig.gpg"
+      dest: "/usr/share/debsig/keyrings/{{ protonmail_bridge_pubkey_id }}/debsig.gpg"
+    - src: "{{ protonmail_lib_dir }}/bridge.pol"
+      dest: "/etc/debsig/policies/{{ protonmail_bridge_pubkey_id }}/bridge.pol"
+  when: "not which_protonmail_bridge"
+
+- name: "Verify the debsig before package installation"
+  become: "yes"
+  command: "debsig-verify {{ protonmail_lib_dir }}/{{ protonmail_bridge_package_name }}"
+  when: "not which_protonmail_bridge"
+
+- name: "Install protonmail-bridge package"
+  apt:
+    deb: "{{ protonmail_lib_dir }}/{{ protonmail_bridge_package_name }}"

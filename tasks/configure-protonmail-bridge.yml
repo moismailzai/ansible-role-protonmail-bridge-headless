@@ -1,0 +1,87 @@
+---
+- name: "Kill the bridge (this is required because of the way the bridge works -- if there's a running instance the proceeding info command would be ignored)"
+  set_fact:
+      protonmail_bridge_pkill: "{{ lookup('pipe', 'pkill -f protonmail-bridge' ) }}"
+  ignore_errors: "true"
+
+- name: "Check if the user has already been added to the bridge"
+  set_fact:
+      protonmail_bridge_info: "{{ lookup('pipe', command_protonmail_bridge_info ) }}"
+  notify: "restart protonmail-bridge-headless"
+
+- name: "Restart the service since we killed it to gather facts (shouldn't use handler to ensure idempotency)"
+  set_fact:
+      protonmail_bridge_pkill: "{{ lookup('pipe', 'systemctl restart protonmail-bridge-headless.service || true' ) }}"
+
+- name: "Parse the local user's email and password from protonmail-bridge info"
+  set_fact:
+      protonmail_password_local: "{{ protonmail_bridge_info | regex_search('(?ims).*Password: *([^\\r\\n]+)', '\\1') | default([], True)  | join('') }}"
+      protonmail_email_local: "{{ protonmail_bridge_info | regex_search('(?ims).*Username: *([^\\r\\n]+)', '\\1') | default([], True)  | join('') }}"
+
+- name: "Add user to protonmail-bridge"
+  become: "yes"
+  become_method: "su"
+  become_user: "{{ protonmail_user }}"
+  shell: |
+      set timeout -1
+      spawn /usr/bin/protonmail-bridge --cli --no-window
+      expect ">>>" {
+          send "login\r"
+      }
+      expect "Username:" {
+          send "{{ protonmail_username }}\r"
+      }
+      expect "Password:" {
+          send "{{ protonmail_password }}\r"
+      }
+      expect ">>>" {
+          send "info\r"
+      }
+      expect -re "Security:.*>>>" {
+          send "exit\r"
+      }
+      interact
+  args:
+      executable: "/usr/bin/expect"
+  register: "protonmail_bridge_info"
+  when: "not protonmail_email_local or not protonmail_password_local"
+  notify: "restart protonmail-bridge-headless"
+
+- name: "Parse the local user's email and password from protonmail-bridge info"
+  set_fact:
+      protonmail_password_local: "{{ protonmail_bridge_info.stdout | regex_search('(?ims).*Password: *([^\\r\\n]+)', '\\1') | join('')  }}"
+      protonmail_email_local: "{{ protonmail_bridge_info.stdout | regex_search('(?ims).*Username: *([^\\r\\n]+)', '\\1') | join('')  }}"
+  when: "not protonmail_email_local or not protonmail_password_local"
+
+- name: "Add a symlink to the protonmail-bridge self-signed certificate on non-RHEL machines (required for postfix to communicate with bridge correctly)"
+  file:
+      src: "/home/{{ protonmail_user }}/.config/protonmail/bridge/cert.pem"
+      dest: "/etc/ssl/certs/protonmail-bridge.pem"
+      state: "link"
+  notify: "restart postfix"
+  when: "ansible_os_family != 'RedHat'"
+
+- name: "Add a symlink to the protonmail-bridge self-signed certificate on RHEL machines"
+  file:
+      src: "/home/{{ protonmail_user }}/.config/protonmail/bridge/cert.pem"
+      dest: "/etc/pki/ca-trust/source/anchors/protonmail-bridge.pem"
+      state: "link"
+  notify: "restart postfix"
+  register: "symlinked_cert_to_trust_store"
+  when: "ansible_os_family == 'RedHat'"
+
+- name: "enable the dynamic CA configuration feature"
+  command: "update-ca-trust force-enable"
+  when: "ansible_os_family == 'RedHat' and symlinked_cert_to_trust_store.changed"
+
+- name: "set SELinux types"
+  command: "semanage fcontext -a -t cert_t /etc/pki/ca-trust/source/anchors/protonmail-bridge.pem"
+  when: "configure_selinux and symlinked_cert_to_trust_store.changed"
+
+- name: "apply SELinux file contexts to filesystem"
+  command: "restorecon -irv /etc/pki/ca-trust/source/anchors/protonmail-bridge.pem"
+  when: "configure_selinux and symlinked_cert_to_trust_store.changed"
+
+- name: "add the root cert to the server"
+  command: "update-ca-trust extract"
+  when: "ansible_os_family == 'RedHat' and symlinked_cert_to_trust_store.changed"
