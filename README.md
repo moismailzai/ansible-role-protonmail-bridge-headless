@@ -38,7 +38,7 @@ postfix.
 
     # configure_selinux: ""
 
-Whether to configure SELinux. Defaults to "true" on RHEL systems and undefined otherwise.
+Whether to configure SELinux. Defaults to true on RHEL systems and false otherwise.
 
     gpg_key_settings:
         type: default
@@ -51,7 +51,7 @@ Whether to configure SELinux. Defaults to "true" on RHEL systems and undefined o
 
 These settings are used to create a local GPG key. The key is required for the ProtonMail bridge and `pass` to 
 communicate. Additional changes can be made to the `templates/protonmail-bridge.gpg.j2` file. _NOTE: the default 
-settings generate a new unprotected key to use exclusively for the bridge. to add a key password, you will need to 
+settings generate a new unprotected key to use exclusively for the bridge. To add a key password, you will need to 
 modify the default values, as well as `templates/protonmail-bridge-headless.service.sh.j2`._
 
     configure_gpg: "true"
