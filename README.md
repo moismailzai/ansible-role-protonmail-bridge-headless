@@ -96,9 +96,9 @@ sudo dnf -y install ansible
 Debian:
 ```
 sudo apt update
-sudo apt install software-properties-common
-sudo apt-add-repository --yes --update ppa:ansible/ansible
-sudo apt install ansible
+sudo apt install -y software-properties-common
+sudo apt-add-repository -y -u ppa:ansible/ansible
+sudo apt install -y ansible
 ```
 
 Then, create a file called `main.yml` and add the below (replacing `your_username`, `your_password`, and `your_domain` 

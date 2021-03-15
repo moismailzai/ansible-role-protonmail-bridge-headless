@@ -13,11 +13,17 @@
     configure: __configure_selinux
     deps: __deps
 
-- name: "Define SELinux"
+- name: "Define SELinux default for RHEL hosts"
   set_fact: "configure_selinux=true"
   when:
     - configure_selinux is undefined
     - ansible_os_family == 'RedHat'
+
+- name: "Define SELinux default for non RHEL hosts"
+  set_fact: "configure_selinux=false"
+  when:
+    - configure_selinux is undefined
+    - ansible_os_family != 'RedHat'
 
 - include_tasks: "configure.yml"
 
