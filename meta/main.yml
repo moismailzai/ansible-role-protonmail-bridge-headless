@@ -24,6 +24,8 @@ galaxy_info:
               - 30
               - 31
               - 32
+              - 33
+              - 34
         - name: "Ubuntu"
           versions:
               - "bionic"
