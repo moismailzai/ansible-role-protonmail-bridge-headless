@@ -26,7 +26,7 @@
 
 - name: "Add user to protonmail-bridge"
   vars:
-      code_expect: "{{ command_protonmail_2fa_code_expect if protonmail_2fa_code is defined else '' }}"
+      code_expect: "{{ '' if protonmail_2fa_code.skipped is defined else command_protonmail_2fa_code_expect }}"
   become: "yes"
   become_method: "su"
   become_user: "{{ protonmail_user }}"

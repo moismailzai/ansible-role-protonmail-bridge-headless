@@ -10,7 +10,7 @@ command_gpg_list_secret_keys: "su - {{ protonmail_user }} -c 'gpg --list-secret-
 command_pass_ls: "su - {{ protonmail_user }} -c 'pass ls || true'"
 command_protonmail_2fa_code_expect: |
     expect "Two factor code:" {
-        send "{{ protonmail_2fa_code.user_input }}\r"
+        send "{{ '' if protonmail_2fa_code.user_input is not defined else protonmail_2fa_code.user_input }}\r"
     }
 command_protonmail_bridge_info: |
     su - {{ protonmail_user }} -c 'echo "info \n exit" | protonmail-bridge --cli --no-window && killall protonmail-bridge || true'
