@@ -10,7 +10,6 @@
     - vars[item.key] is undefined
     - vars[item.value] is defined
   with_dict:
-    configure: __configure_selinux
     deps: __deps
 
 - name: "Define SELinux default for RHEL hosts"

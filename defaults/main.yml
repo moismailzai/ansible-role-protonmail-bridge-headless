@@ -8,6 +8,10 @@ protonmail_custom_domain: ""
 
 command_gpg_list_secret_keys: "su - {{ protonmail_user }} -c 'gpg --list-secret-keys \"{{ gpg_key_settings.name }}\" | grep -oP \"^ * (.*)$\" | head -1'"
 command_pass_ls: "su - {{ protonmail_user }} -c 'pass ls || true'"
+command_protonmail_2fa_code_expect: |
+    expect "Two factor code:" {
+        send "{{ protonmail_2fa_code.user_input }}\r"
+    }
 command_protonmail_bridge_info: |
     su - {{ protonmail_user }} -c 'echo "info \n exit" | protonmail-bridge --cli --no-window && killall protonmail-bridge || true'
 command_which_protonmail_bridge: "which protonmail-bridge 2>/dev/null || true"
@@ -16,7 +20,6 @@ configure_gpg: true
 configure_pass: true
 configure_postfix: true
 configure_service: true
-# configure_selinux: false
 configure_user: true
 
 gpg_key_settings:
@@ -39,5 +42,6 @@ protonmail_bridge_pubkey_id: "E2C75D68E6234B07"
 protonmail_lib_dir: "/var/lib/protonmail"
 protonmail_user: "protonmail"
 protonmail_user_flags: "-L"
+protonmail_enable_2fa: false
 
 selinux_httpd_can_sendmail: true

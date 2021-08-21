@@ -18,7 +18,15 @@
       protonmail_password_local: "{{ protonmail_bridge_info | regex_search('(?ims).*Password: *([^\\r\\n]+)', '\\1') | default([], True)  | join('') }}"
       protonmail_email_local: "{{ protonmail_bridge_info | regex_search('(?ims).*Username: *([^\\r\\n]+)', '\\1') | default([], True)  | join('') }}"
 
+- name: "Prompt the user for a two-factor authentication code if required"
+  pause:
+      prompt: "Please input a two-factor authentication code (wait for a fresh code to avoid having it expire before being used)"
+  when: protonmail_enable_2fa|bool
+  register: protonmail_2fa_code
+
 - name: "Add user to protonmail-bridge"
+  vars:
+      code_expect: "{{ command_protonmail_2fa_code_expect if protonmail_2fa_code is defined else '' }}"
   become: "yes"
   become_method: "su"
   become_user: "{{ protonmail_user }}"
@@ -34,6 +42,7 @@
       expect "Password:" {
           send "{{ protonmail_password }}\r"
       }
+      {{ code_expect }}
       expect ">>>" {
           send "info\r"
       }

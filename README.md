@@ -1,6 +1,6 @@
 # Ansible Role: ProtonMail Bridge (headless)
 
-Installs the ProtonMail Bridge, registers it as a headless service, and configures Postfix to use it. Supports RedHat/CentOS,
+Installs the ProtonMail Bridge (optionally prompting for 2FA), registers it as a headless service, and configures Postfix to use it. Supports RedHat/CentOS,
 Debian/Ubuntu, and Archlinux servers.
 
 ## Background
@@ -32,9 +32,11 @@ Available variables are listed below, along with default values (see `defaults/m
     protonmail_username: ""
     protonmail_password: ""
     protonmail_custom_domain: ""
+    protonmail_enable_2fa: false
 
 Your ProtonMail credentials and domain. These are used to add your account to the ProtonMail-bridge, and to configure 
-postfix.
+postfix. __NOTE__: when `protonmail_enable_2fa` is set to `true`, this role will be run interactively and will prompt you 
+for a 2FA code.
 
     # configure_selinux: ""
 
