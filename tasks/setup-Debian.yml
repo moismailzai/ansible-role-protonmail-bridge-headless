@@ -36,6 +36,7 @@
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
+    remote_src: "yes"
   with_items:
     - src: "{{ protonmail_lib_dir }}/debsig.gpg"
       dest: "/usr/share/debsig/keyrings/{{ protonmail_bridge_pubkey_id }}/debsig.gpg"
