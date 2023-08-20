@@ -35,6 +35,7 @@ gpg_key_settings:
 postfix_hostname: "{{ protonmail_custom_domain }}"
 postfix_localhost_address: "127.0.0.1"
 
+protonmail_bridge_config_dir: "/home/{{ protonmail_user }}/.config/protonmail/bridge-v3"
 protonmail_bridge_pkgbuild_file: "https://protonmail.com/download/bridge/PKGBUILD"
 protonmail_bridge_policy_file: "https://protonmail.com/download/bridge.pol"
 protonmail_bridge_pubkey_file: "https://protonmail.com/download/bridge_pubkey.gpg"

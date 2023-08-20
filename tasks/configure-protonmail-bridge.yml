@@ -24,6 +24,10 @@
   when: protonmail_enable_2fa|bool
   register: protonmail_2fa_code
 
+- name: "Kill the protonmail-bridge if we need to run the login"
+  shell: "killall protonmail-bridge || true"
+  when: "not protonmail_email_local or not protonmail_password_local"
+
 - name: "Add user to protonmail-bridge"
   vars:
       code_expect: "{{ '' if protonmail_2fa_code.skipped is defined else command_protonmail_2fa_code_expect }}"
@@ -56,6 +60,28 @@
   when: "not protonmail_email_local or not protonmail_password_local"
   notify: "restart protonmail-bridge-headless"
 
+- name: "Export the protonmail-bridge certificate"
+  become: "yes"
+  become_method: "su"
+  become_user: "{{ protonmail_user }}"
+  shell: |
+    set timeout -1
+    spawn /usr/bin/protonmail-bridge --cli --no-window
+    expect ">>>" {
+        send "export-tls-cert\r"
+    }
+    expect -re ".*path.*" {
+        send "{{ protonmail_bridge_config_dir }}/\r"
+    }
+    expect ">>>" {
+        send "exit\r"
+    }
+    interact
+  args:
+    executable: "/usr/bin/expect"
+  when: "not protonmail_email_local or not protonmail_password_local"
+  notify: "restart protonmail-bridge-headless"
+
 - name: "Parse the local user's email and password from protonmail-bridge info"
   set_fact:
       protonmail_password_local: "{{ protonmail_bridge_info.stdout | regex_search('(?ims).*Password: *([^\\r\\n]+)', '\\1') | join('')  }}"
@@ -64,7 +90,7 @@
 
 - name: "Add a symlink to the protonmail-bridge self-signed certificate on non-RHEL machines (required for postfix to communicate with bridge correctly)"
   file:
-      src: "/home/{{ protonmail_user }}/.config/protonmail/bridge/cert.pem"
+      src: "{{ protonmail_bridge_config_dir }}/cert.pem"
       dest: "/etc/ssl/certs/protonmail-bridge.pem"
       state: "link"
   notify: "restart postfix"
@@ -78,7 +104,7 @@
 
 - name: "Add a symlink to the protonmail-bridge self-signed certificate on RHEL machines"
   file:
-      src: "/home/{{ protonmail_user }}/.config/protonmail/bridge/cert.pem"
+      src: "{{ protonmail_bridge_config_dir }}/cert.pem"
       dest: "/etc/pki/ca-trust/source/anchors/protonmail-bridge.pem"
       state: "link"
   notify: "restart postfix"
